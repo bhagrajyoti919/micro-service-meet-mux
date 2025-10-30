@@ -1,9 +1,18 @@
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
 from typing import Dict, Optional, List
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timezone
 import uuid
 from decimal import Decimal
 
-orders_db: Dict[str, dict] = {}
+load_dotenv()
+MONGO_URI = os.getenv('MONGO_URI')
+DB_NAME = os.getenv('DB_NAME', 'meet_mux')
+
+client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+orders_col = db['orders']
 
 def create_order(user_id: str, items: list, shipping_address: str, user_details: dict = None) -> dict:
     order_id = str(uuid.uuid4())
@@ -14,20 +23,29 @@ def create_order(user_id: str, items: list, shipping_address: str, user_details:
         "user_id": user_id,
         "user_details": user_details,
         "items": items,
-        "total_amount": total_amount,
+        "total_amount": float(total_amount),
         "status": "pending",
         "shipping_address": shipping_address,
-        "created_at": datetime.now(UTC),
-        "updated_at": datetime.now(UTC)
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
-    orders_db[order_id] = order
+    orders_col.insert_one(order)
     return order
 
 def get_order(order_id: str) -> Optional[dict]:
-    return orders_db.get(order_id)
+    order = orders_col.find_one({"order_id": order_id})
+    if order:
+        order.pop('_id', None)
+    return order
 
 def get_orders_by_user(user_id: str) -> List[dict]:
-    return [order for order in orders_db.values() if order["user_id"] == user_id]
+    orders = list(orders_col.find({"user_id": user_id}))
+    for o in orders:
+        o.pop('_id', None)
+    return orders
 
 def get_all_orders() -> list:
-    return list(orders_db.values())
+    orders = list(orders_col.find())
+    for o in orders:
+        o.pop('_id', None)
+    return orders

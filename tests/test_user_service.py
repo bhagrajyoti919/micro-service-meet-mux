@@ -21,24 +21,24 @@ def test_root_endpoint():
 def test_create_user_success():
     """Test successful user creation"""
     user_data = {
-        "username": "johndoe",
-        "email": "john@example.com",
-        "full_name": "John Doe"
+        "username": "rohit",
+        "email": "rohit@gmail.com",
+        "full_name": "Rohit Kumar"
     }
     response = client.post("/users", json=user_data)
     assert response.status_code == 201
     data = response.json()
-    assert data["username"] == "johndoe"
-    assert data["email"] == "john@example.com"
+    assert data["username"] == "rohit"
+    assert data["email"] == "rohit@gmail.com"   
     assert "user_id" in data
     assert data["is_active"] is True
 
 def test_create_user_invalid_email():
     """Test user creation with invalid email"""
     user_data = {
-        "username": "johndoe",
+        "username": "rohit",
         "email": "invalid-email",
-        "full_name": "John Doe"
+        "full_name": "Rohit Kumar"
     }
     response = client.post("/users", json=user_data)
     assert response.status_code == 422
@@ -46,16 +46,18 @@ def test_create_user_invalid_email():
 def test_get_user_success():
     """Test getting user by ID"""
     user_data = {
-        "username": "janedoe",
-        "email": "jane@example.com",
-        "full_name": "Jane Doe"
+        "username": "rohit",
+        "email": "rohit@gmail.com",
+        "full_name": "Rohit Kumar"
     }
     create_response = client.post("/users", json=user_data)
     user_id = create_response.json()["user_id"]
     
     response = client.get(f"/users/{user_id}")
     assert response.status_code == 200
-    assert response.json()["username"] == "janedoe"
+    assert response.json()["username"] == "rohit"
+    assert response.json()["email"] == "rohit@gmail.com"   
+    assert response.json()["full_name"] == "Rohit Kumar"
 
 def test_get_user_not_found():
     """Test getting non-existent user"""
@@ -78,9 +80,9 @@ def test_list_users():
 def test_validate_user_success():
     """Test user validation endpoint"""
     user_data = {
-        "username": "validuser",
-        "email": "valid@example.com",
-        "full_name": "Valid User"
+        "username": "rohit",
+        "email": "rohit@gmail.com",
+        "full_name": "Rohit Kumar"
     }
     create_response = client.post("/users", json=user_data)
     user_id = create_response.json()["user_id"]
